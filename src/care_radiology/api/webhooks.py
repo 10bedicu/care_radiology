@@ -17,7 +17,7 @@ from care_radiology.models.dicom_study import DicomStudy
 from care_radiology.models.webhook_logs import RadiologyWebhookLogs
 from care_radiology.models.radiology_service_request import RadiologyServiceRequest
 
-STATIC_API_KEY = settings.PLUGIN_CONFIGS['care_radiology']['WEBHOOK_SECRET']
+STATIC_API_KEY = settings.PLUGIN_CONFIGS['care_radiology']['CARE_RADIOLOGY_WEBHOOK_SECRET']
 
 
 class StaticAPIKeyAuthentication(BaseAuthentication):
@@ -33,10 +33,15 @@ class WebhookViewSet(ViewSet):
         detail=False,
         methods=["post"],
         url_path="study",
-        authentication_classes=[StaticAPIKeyAuthentication],
         permission_classes=[AllowAny],
     )
     def save_webhook(self, request):
+        # Authenticating webhooks with Key from plug_config
+        authenticator = StaticAPIKeyAuthentication()
+        user_auth_tuple = authenticator.authenticate(request)
+        if user_auth_tuple is None:
+            raise AuthenticationFailed("Invalid API key")
+
         try:
             data = request.data
         except ParseError:

@@ -6,7 +6,9 @@ from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from django.core.cache import cache
+from care.security.authorization.base import AuthorizationController
 
+from rest_framework.exceptions import AuthenticationFailed, PermissionDenied
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -17,7 +19,7 @@ from care_radiology.models.radiology_service_request import RadiologyServiceRequ
 from care_radiology.models.dicom_study import DicomStudy
 
 
-DCM4CHEE_BASEURL = settings.PLUGIN_CONFIGS['care_radiology']['DCM4CHEE_DICOMWEB_BASEURL']
+DCM4CHEE_BASEURL = settings.PLUGIN_CONFIGS['care_radiology']['CARE_RADIOLOGY_DCM4CHEE_DICOMWEB_BASEURL']
 
 
 class DICOM_TAG(Enum):
@@ -54,6 +56,9 @@ class DicomViewSet(ViewSet):
     def upload(self, request):
         patient = Patient.objects.get(external_id=request.data.get("patient_id"))
         dcm_file = request.FILES.get("file")
+
+        if not AuthorizationController.call("can_write_patient_obj", self.request.user, patient):
+            raise PermissionDenied(f"You do not have permission to upload DICOM for this patient")
 
         if not dcm_file:
             return Response({"error": "No file provided"}, status=400)
@@ -103,8 +108,7 @@ class DicomViewSet(ViewSet):
             else:
                 return Response(
                     data={
-                        "error": "Failed to upload to Orthanc",
-                        "status_code": upload_response.text,
+                        "error": "Failed to upload to DCM4CHE",
                         "status_code": upload_response.status_code,
                     },
                     status=502,
@@ -119,6 +123,11 @@ class DicomViewSet(ViewSet):
     @action(detail=False, methods=["get"], url_path="studies")
     def get_studies(self, request):
         patient_external_id = request.query_params.get("patientId")
+
+        patient = Patient.objects.get(external_id=patient_external_id)
+        if not AuthorizationController.call("can_view_patient_obj", self.request.user, patient):
+            raise PermissionDenied(f"You do not have permission to view this patient")
+
         studies = DicomStudy.objects.filter(patient__external_id=patient_external_id)
 
         results = []
@@ -143,6 +152,11 @@ class DicomViewSet(ViewSet):
     )
     def get_servicerequests(self, request):
         service_request_external_id = request.query_params.get("serviceRequestId")
+
+        service_request = ServiceRequest.objects.get(external_id=service_request_external_id)
+        if not AuthorizationController.call("can_write_service_request", self.request.user, service_request):
+            raise PermissionDenied(f"You do not have permission to view this service request")
+
         tsr = RadiologyServiceRequest.objects.filter(
             service_request__external_id=service_request_external_id,
             dicom_study__dicom_study_uid__isnull=False,

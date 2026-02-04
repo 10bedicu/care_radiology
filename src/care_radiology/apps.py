@@ -7,6 +7,3 @@ PLUGIN_NAME = "care_radiology"
 class CareRadiologyPluginConfig(AppConfig):
     name = PLUGIN_NAME
     verbose_name = _("Care radiology plugin")
-
-    def ready(self):
-        import care_radiology.signals  # noqa F401
