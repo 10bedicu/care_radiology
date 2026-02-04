@@ -93,11 +93,13 @@ wadoRoot: 'https://localhost:32314/dicomweb/dcm4chee-arc/aets/DCM4CHEE/rs',
 ...
 
 radiology_plug = Plug(
-    name=Care Radiology Plugin,
-    package_name="/app/care_radiology",
-    version="@master",
+    name="care_radiology",
+    package_name="git+https://github.com/10bedicu/care_radiology.git",
+    version="@main",
     configs={
-        
+        # can be defined as environment variables in production setup
+        "DCM4CHEE_DICOMWEB_BASEURL": "http://arc:8080/dcm4chee-arc/aets/DCM4CHEE",
+        "WEBHOOK_SECRET": "secure-webhook-secret"
     },
 )
 plugs = [radiology_plug]
