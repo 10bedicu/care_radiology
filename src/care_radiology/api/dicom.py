@@ -17,9 +17,9 @@ from rest_framework.permissions import AllowAny
 from care.emr.models.patient import Patient
 from care_radiology.models.radiology_service_request import RadiologyServiceRequest
 from care_radiology.models.dicom_study import DicomStudy
+from care_radiology.settings import plugin_settings
 
-
-DCM4CHEE_BASEURL = settings.PLUGIN_CONFIGS['care_radiology']['CARE_RADIOLOGY_DCM4CHEE_DICOMWEB_BASEURL']
+DCM4CHEE_BASEURL =  plugin_settings.CARE_RADIOLOGY_DCM4CHEE_DICOMWEB_BASEURL
 
 
 class DICOM_TAG(Enum):

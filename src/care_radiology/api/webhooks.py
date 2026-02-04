@@ -16,8 +16,9 @@ from care.emr.models.service_request import ServiceRequest
 from care_radiology.models.dicom_study import DicomStudy
 from care_radiology.models.webhook_logs import RadiologyWebhookLogs
 from care_radiology.models.radiology_service_request import RadiologyServiceRequest
+from care_radiology.settings import plugin_settings
 
-STATIC_API_KEY = settings.PLUGIN_CONFIGS['care_radiology']['CARE_RADIOLOGY_WEBHOOK_SECRET']
+STATIC_API_KEY = plugin_settings.CARE_RADIOLOGY_WEBHOOK_SECRET
 
 
 class StaticAPIKeyAuthentication(BaseAuthentication):
