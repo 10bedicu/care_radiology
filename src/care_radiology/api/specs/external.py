@@ -1,10 +1,12 @@
-from typing import Literal
+from datetime import datetime
+from typing import Annotated, Literal
 
-from pydantic import UUID4, BaseModel
+from pydantic import UUID4, BaseModel, BeforeValidator
 
 from care.emr.models.device import Device
 from care.emr.models.location import FacilityLocation
 from care.emr.resources.base import EMRResource
+from care_radiology.utils.dicom import parse_date
 
 
 class WorklistDeviceSpec(EMRResource):
@@ -12,11 +14,16 @@ class WorklistDeviceSpec(EMRResource):
 
     id: UUID4 | None = None
     name: str | None = None
+    ae_title: str | None = None
+    modality: str | None = None
 
     @classmethod
     def perform_extra_serialization(cls, mapping, obj, *args, **kwargs):
         super().perform_extra_serialization(mapping, obj)
         mapping["name"] = obj.registered_name
+        machine = obj.metadata.get("machine") or {}
+        mapping["ae_title"] = machine.get("ae_title")
+        mapping["modality"] = machine.get("modality")
 
 
 class WorklistLocationSpec(EMRResource):
@@ -32,10 +39,13 @@ class WorklistLocationSpec(EMRResource):
         mapping["devices"] = list(devices)
 
 
+WorklistDate = Annotated[datetime | None, BeforeValidator(parse_date)]
+
+
 class DicomWorklistQuerySpec(BaseModel):
-    modality: str | None = None
-    created_date_after: str | None = None
-    created_date_before: str | None = None
+    device_id: str | None = None
+    created_date_after: WorklistDate = None
+    created_date_before: WorklistDate = None
 
 
 class WebhookMppsSpec(BaseModel):

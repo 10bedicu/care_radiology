@@ -15,6 +15,16 @@ MPPS_TAG_DISPLAY_BY_STATUS = {
 
 DICOM_FILE_EXTENSIONS = (".dcm", ".dicom")
 
+# Device care_type of the DICOM devices (one per modality machine) the DICOM Enabler connects to
+DICOM_CARE_TYPE = "dicom"
+
+# Device care_type of the DICOM Enabler the DICOM devices of a room connect to
+DICOM_ENABLER_CARE_TYPE = "dicom-enabler"
+
+# assignment_status kept in the metadata of a DICOM Enabler or DICOM device; a device without it is unassigned
+ASSIGNMENT_STATUS_ASSIGNED = "assigned"
+ASSIGNMENT_STATUS_UNASSIGNED = "unassigned"
+
 DICOM_STUDY_CACHE_KEY_TEMPLATE = "radiology:dicom:study:{}"
 
 # Serialises concurrent uploads of the same DICOM file, keyed by SOP Instance UID.
